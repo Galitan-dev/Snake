@@ -1,0 +1,10 @@
+name: Snake
+description: A Snake game made in Rust, from scratch. It includes a Genetic
+  Algorithm (Artificial Intelligence).
+private: false
+license:
+  id: mit
+  name: MIT License
+author: Galitan-dev
+template: rs
+path: /Users/ethan/Documents/Development.nosync/Snake

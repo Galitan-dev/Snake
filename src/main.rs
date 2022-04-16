@@ -1,12 +1,27 @@
-const HELLO_WORLD: &str = "Hello World!";
+extern crate crossterm;
+
+mod game;
+mod terminal;
+
+use game::{draw::Drawable, snake::Snake};
+use std::{thread, time::Duration};
+use terminal::RawTerminal;
+
+const TPS: u64 = 20;
 
 fn main() {
-    for (i, char) in HELLO_WORLD.chars().enumerate() {
-        let mut indentation = String::new();
-        for _ in 0..i * 2 {
-            indentation.push(' ');
+    let terminal = RawTerminal::new();
+    let mut snake = Snake::new();
+
+    while let Some(key) = terminal.key() {
+        snake.set_direction(key);
+        if !snake.update() {
+            break;
         }
 
-        println!("{} {}", indentation, char);
+        terminal.clear();
+        terminal.println(snake.draw());
+
+        thread::sleep(Duration::from_millis(1000 / TPS));
     }
 }

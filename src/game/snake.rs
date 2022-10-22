@@ -71,7 +71,7 @@ impl Snake {
     }
 
     pub fn update(&mut self) -> bool {
-        let head = *self.body.last().unwrap();
+        let head = self.get_head();
 
         if let Ok(new_head) = self.direction.apply(*self.body.last().unwrap()) {
             if self.body.contains(&new_head) {
@@ -91,6 +91,18 @@ impl Snake {
         }
 
         true
+    }
+
+    pub fn get_head(&self) -> [usize; 2] {
+        *self.body.last().unwrap()
+    }
+
+    // pub fn get_body(&self) -> &Vec<[usize; 2]> {
+    //     &self.body
+    // }
+
+    pub fn get_apple(&self) -> [usize; 2] {
+        self.apple
     }
 
     pub fn set_direction<D>(&mut self, dir: D)

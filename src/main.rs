@@ -26,7 +26,7 @@ fn main() {
         } else {
             snake.set_direction(key);
         }
-        
+
         if !snake.update() {
             break;
         }

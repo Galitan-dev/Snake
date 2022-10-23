@@ -1,7 +1,5 @@
 use rand::{prelude::ThreadRng, thread_rng, Rng};
-
 use crate::terminal::key::Key;
-
 use super::{HEIGHT, WIDTH};
 
 pub struct Snake {
@@ -11,6 +9,7 @@ pub struct Snake {
     rng: ThreadRng,
 }
 
+#[derive(Debug, Clone, Copy)]
 pub enum Direction {
     Up = 0,
     Down = 1,
@@ -33,6 +32,15 @@ impl TryFrom<Key> for Direction {
 }
 
 impl Direction {
+    pub fn list() -> [Self; 4] {
+        [
+            Self::Up,
+            Self::Down,
+            Self::Left,
+            Self::Right
+        ]
+    }
+
     pub fn apply(&self, pos: [usize; 2]) -> Result<[usize; 2], ()> {
         let [sx, sy] = match self {
             Direction::Up => [0, -1],
@@ -97,9 +105,13 @@ impl Snake {
         *self.body.last().unwrap()
     }
 
-    // pub fn get_body(&self) -> &Vec<[usize; 2]> {
-    //     &self.body
-    // }
+    pub fn get_body(&self) -> &Vec<[usize; 2]> {
+        &self.body
+    }
+
+    pub fn get_direction(&self) -> Direction {
+        self.direction
+    }
 
     pub fn get_apple(&self) -> [usize; 2] {
         self.apple

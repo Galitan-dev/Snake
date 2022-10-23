@@ -1,4 +1,8 @@
+mod utils;
+
 use crate::game::snake::{Snake, Direction};
+
+use self::utils::dist;
 
 pub struct AI {
 }
@@ -12,18 +16,19 @@ impl AI {
         let apple = snake.get_apple();
         let head = snake.get_head();
 
-        let dist_x: isize = apple[0] as isize - head[0] as isize;
-        let dist_y: isize = apple[1] as isize - head[1] as isize;
+        let mut dirs = Direction::list();
+        dirs.sort_by(|a, b| 
+            dist(a.apply(head).unwrap_or(head), apple)
+            .cmp(&dist(b.apply(head).unwrap_or(head), apple)));
 
-        if dist_x < 0 {
-            Direction::Left
-        } else if dist_x > 0{
-            Direction::Right
-        } else if dist_y < 0 {
-            Direction::Up
-        } else {
-            Direction::Down
+        for dir in dirs {
+            if let Ok(new_head) = dir.apply(head) {
+                if !snake.get_body().contains(&new_head) {
+                    return dir
+                }
+            }
         }
         
+        snake.get_direction()
     }
 }

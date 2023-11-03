@@ -1,39 +1,23 @@
-extern crate crossterm;
+extern crate bracket_lib;
+
+use bracket_lib::prelude::*;
+use game::UInt;
 
 mod game;
-mod terminal;
-mod ai;
+pub mod palette;
 
-use game::{draw::Drawable, snake::Snake};
-use std::{thread, time::Duration, env};
-use terminal::RawTerminal;
-use ai::AI;
+pub const FPS_CAP: f32 = 40.0;
+pub const COLUMNS: UInt = 80;
+pub const ROWS: UInt = 50;
 
-const TPS: u64 = 20;
+fn main() -> BError {
+    palette::register();
 
-fn main() {
-    let ai_arg = env::var("AI").unwrap_or("0".to_owned());
-    let use_ai = ai_arg == "1";
+    let context = BTermBuilder::simple80x50()
+        .with_title("Snake")
+        .with_fps_cap(FPS_CAP)
+        .build()?;
+    let gamestate = game::State::new();
 
-    let terminal = RawTerminal::new();
-    let mut snake = Snake::new();
-    let ai = AI::new();
-
-    while let Some(key) = terminal.key() {
-        
-        if use_ai {
-            snake.set_direction( ai.get_direction(&snake))
-        } else {
-            snake.set_direction(key);
-        }
-
-        if !snake.update() {
-            break;
-        }
-
-        terminal.clear();
-        terminal.println(snake.draw());
-
-        thread::sleep(Duration::from_millis(1000 / TPS));
-    }
+    main_loop(context, gamestate)
 }

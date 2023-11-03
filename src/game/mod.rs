@@ -1,5 +1,5 @@
-pub mod draw;
-pub mod snake;
+mod position;
+mod state;
 
-pub const WIDTH: usize = 73;
-pub const HEIGHT: usize = 39;
+pub use position::*;
+pub use state::*;

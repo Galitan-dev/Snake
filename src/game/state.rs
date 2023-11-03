@@ -1,21 +1,22 @@
 use super::{Direction, Position};
-use crate::palette;
+use crate::{palette, FPS};
 use bracket_lib::{
     random::RandomNumberGenerator,
     terminal::{BTerm, GameState},
 };
-use std::{collections::VecDeque, time::Instant};
+use std::collections::VecDeque;
 
 pub struct State {
     snake: VecDeque<Position>,
     is_first_render: bool,
-    last_tick: Instant,
     last_tail: Position,
     direction: Direction,
     next_direction: Direction,
     apple: Position,
     has_apple_moved: bool,
     rng: RandomNumberGenerator,
+    last_frame_ms: f32,
+    elapsed_ms: f32,
 }
 
 impl State {
@@ -23,13 +24,14 @@ impl State {
         let mut state = Self {
             snake: VecDeque::from(vec![Position(5, 3), Position(4, 3), Position(3, 3)]),
             is_first_render: true,
-            last_tick: Instant::now(),
             last_tail: Position(2, 3),
             direction: Direction::Right,
             next_direction: Direction::Right,
             apple: Position::null(),
             has_apple_moved: true,
             rng: RandomNumberGenerator::new(),
+            last_frame_ms: 0.0,
+            elapsed_ms: 0.0
         };
 
         state.move_apple();
@@ -84,6 +86,8 @@ impl State {
 
 impl GameState for State {
     fn tick(&mut self, ctx: &mut BTerm) {
+        self.elapsed_ms += ctx.frame_time_ms;
+
         self.next_direction = ctx
             .key
             .try_into()
@@ -96,22 +100,25 @@ impl GameState for State {
             })
             .unwrap_or(self.next_direction);
 
-        self.direction = self.next_direction;
-        self.last_tick = Instant::now();
+        if (self.elapsed_ms - self.last_frame_ms) > 1000.0 / FPS {
+            self.direction = self.next_direction;
 
-        if self.get_snake_head() == &self.apple {
-            self.move_apple();
-        } else {
-            self.last_tail = self.snake.pop_back().expect("Empty Snake");
-        }
+            if self.get_snake_head() == &self.apple {
+                self.move_apple();
+            } else {
+                self.last_tail = self.snake.pop_back().expect("Empty Snake");
+            }
+    
+            if let Some(new_head) = self.get_snake_head().apply(self.direction) {
+                self.snake.push_front(new_head);
+    
+                self.render(ctx);
 
-        if let Some(new_head) = self.get_snake_head().apply(self.direction) {
-            self.snake.push_front(new_head);
-
-            self.render(ctx);
-            self.has_apple_moved = false;
-        } else {
-            ctx.quit();
+                self.last_frame_ms = self.elapsed_ms;
+                self.has_apple_moved = false;
+            } else {
+                ctx.quit();
+            }
         }
     }
 }
